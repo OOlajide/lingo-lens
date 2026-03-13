@@ -10,6 +10,8 @@ let session;
 let isSessionActive = false;
 let nextPlayTime = 0;
 let frameInterval;
+let lastSpeaker = null;
+let currentMsgContent = null;
 
 // DOM Elements
 const statusText = document.getElementById('statusText');
@@ -92,25 +94,35 @@ function playAudio(base64Data) {
 }
 
 function appendTranscript(text, isTutor) {
-  if (emptyState) {
+  if (!text) return;
+  
+  if (emptyState && emptyState.parentNode) {
     emptyState.remove();
   }
   
-  const div = document.createElement('div');
-  div.className = 'msg ' + (isTutor ? 'tutor-msg' : 'user-msg');
+  const speaker = isTutor ? 'tutor' : 'user';
   
-  const label = document.createElement('div');
-  label.className = 'msg-label';
-  label.textContent = isTutor ? 'Tutor' : 'You';
+  if (speaker !== lastSpeaker) {
+    const div = document.createElement('div');
+    div.className = 'msg ' + (isTutor ? 'tutor-msg' : 'user-msg');
+    
+    const label = document.createElement('div');
+    label.className = 'msg-label';
+    label.textContent = isTutor ? 'Tutor' : 'You';
+    
+    currentMsgContent = document.createElement('div');
+    currentMsgContent.className = 'msg-content';
+    
+    div.appendChild(label);
+    div.appendChild(currentMsgContent);
+    transcriptEl.appendChild(div);
+    
+    lastSpeaker = speaker;
+  }
   
-  const content = document.createElement('div');
-  content.className = 'msg-content';
-  content.textContent = text;
-  
-  div.appendChild(label);
-  div.appendChild(content);
-  
-  transcriptEl.appendChild(div);
+  // Append text with a space if content already exists
+  const separator = currentMsgContent.textContent ? ' ' : '';
+  currentMsgContent.textContent += separator + text.trim();
   transcriptEl.scrollTop = transcriptEl.scrollHeight;
 }
 
@@ -144,7 +156,9 @@ startBtn.onclick = async () => {
       model: 'gemini-2.5-flash-native-audio-preview-12-2025',
       config: {
         responseModalities: [Modality.AUDIO],
-        systemInstruction: { parts: [{ text: finalInstructions }] }
+        systemInstruction: { parts: [{ text: finalInstructions }] },
+        inputAudioTranscription: { outputTranscriptionMimeType: 'text/plain' },
+        outputAudioTranscription: { outputTranscriptionMimeType: 'text/plain' }
       },
       callbacks: {
         onopen: () => {
@@ -230,6 +244,9 @@ function stopSession() {
   stopBtn.disabled = true;
   languageSelect.disabled = false;
   updateStatus('ready', 'Ready');
+  
+  lastSpeaker = null;
+  currentMsgContent = null;
   
   clearInterval(frameInterval);
   if (session) session.close();
