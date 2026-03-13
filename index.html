@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LingoLens</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050505;
+      --glass: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --accent: #E5A970;
+      --text-main: #F3F3F3;
+      --text-muted: #888888;
+      --tutor-msg: #E5A970;
+      --user-msg: #A0A0A0;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Manrope', sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background-image: radial-gradient(circle at 50% 0%, rgba(229, 169, 112, 0.08), transparent 50%),
+                        radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.03), transparent 50%);
+    }
+
+    /* Grain overlay */
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    header {
+      padding: 2rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 20;
+    }
+
+    h1 {
+      font-family: 'Fraunces', serif;
+      font-weight: 300;
+      font-size: 2rem;
+      margin: 0;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    h1::before {
+      content: '';
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+      animation: pulse 2s infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.6; transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 20px var(--accent); }
+    }
+
+    .main-container {
+      display: flex;
+      flex: 1;
+      padding: 0 3rem 3rem 3rem;
+      gap: 2rem;
+      z-index: 20;
+      height: calc(100vh - 100px);
+    }
+
+    /* Left Side: Video & Controls */
+    .view-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      position: relative;
+    }
+
+    .video-wrapper {
+      flex: 1;
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+      background: #000;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .video-wrapper::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
+      border-radius: 24px;
+      pointer-events: none;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+    video.active { opacity: 1; }
+
+    .ambient-glow {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%;
+      height: 80%;
+      background: radial-gradient(circle, rgba(229, 169, 112, 0.15) 0%, transparent 70%);
+      filter: blur(40px);
+      z-index: -1;
+      transition: opacity 0.5s;
+      opacity: 0;
+    }
+    .ambient-glow.active { opacity: 1; }
+
+    .controls-panel {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 100px;
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .lang-selector {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .lang-selector label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+
+    select {
+      background: transparent;
+      color: var(--text-main);
+      border: none;
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      padding-right: 1.5rem;
+      background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23F3F3F3' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right center;
+    }
+    
+    select option { background: #111; color: #fff; }
+
+    .action-btns {
+      display: flex;
+      gap: 1rem;
+    }
+
+    button {
+      background: transparent;
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
+      padding: 0.75rem 2rem;
+      border-radius: 100px;
+      font-family: 'Manrope', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      letter-spacing: 0.05em;
+    }
+
+    button:hover:not(:disabled) {
+      background: rgba(255,255,255,0.08);
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    button.primary {
+      background: var(--text-main);
+      color: var(--bg);
+      border-color: transparent;
+    }
+
+    button.primary:hover:not(:disabled) {
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(255,255,255,0.2);
+    }
+
+    /* Right Side: Transcript & Status */
+    .sidebar {
+      width: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .status-card {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .status-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+
+    .status-value {
+      font-family: 'Fraunces', serif;
+      font-size: 1.5rem;
+      font-weight: 300;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #444;
+      transition: background 0.3s;
+    }
+    .status-dot.active { background: #4ADE80; box-shadow: 0 0 10px #4ADE80; }
+    .status-dot.error { background: #F87171; box-shadow: 0 0 10px #F87171; }
+    .status-dot.connecting { background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1s infinite alternate; }
+
+    .transcript-card {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 1.5rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .transcript-header {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .transcript-body {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      padding-right: 10px;
+    }
+
+    /* Scrollbar */
+    .transcript-body::-webkit-scrollbar { width: 4px; }
+    .transcript-body::-webkit-scrollbar-track { background: transparent; }
+    .transcript-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+    .msg {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: fadeInUp 0.4s forwards cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    @keyframes fadeInUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+      opacity: 0.7;
+    }
+
+    .tutor-msg { color: var(--tutor-msg); }
+    .tutor-msg .msg-content { font-family: 'Fraunces', serif; font-size: 1.1rem; }
+    
+    .user-msg { color: var(--text-main); }
+    .user-msg .msg-content { color: var(--user-msg); }
+
+    .empty-state {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: var(--text-muted);
+      font-style: italic;
+      font-size: 0.9rem;
+    }
+
+    /* Visualizer */
+    .visualizer {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 20px;
+      margin-left: auto;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .visualizer.active { opacity: 1; }
+    
+    .bar {
+      width: 3px;
+      background: var(--accent);
+      border-radius: 3px;
+      animation: visualize 1s ease-in-out infinite alternate;
+    }
+    .bar:nth-child(1) { height: 40%; animation-delay: 0.0s; }
+    .bar:nth-child(2) { height: 80%; animation-delay: 0.2s; }
+    .bar:nth-child(3) { height: 60%; animation-delay: 0.4s; }
+    .bar:nth-child(4) { height: 100%; animation-delay: 0.1s; }
+    .bar:nth-child(5) { height: 50%; animation-delay: 0.3s; }
+
+    @keyframes visualize {
+      0% { transform: scaleY(0.5); }
+      100% { transform: scaleY(1); }
+    }
+
+  </style>
+</head>
+<body>
+  
+  <header>
+    <h1>LingoLens</h1>
+  </header>
+  
+  <div class="main-container">
+    
+    <div class="view-section">
+      <div class="ambient-glow" id="ambientGlow"></div>
+      <div class="video-wrapper">
+        <video id="webcam" autoplay playsinline muted></video>
+      </div>
+      
+      <div class="controls-panel">
+        <div class="lang-selector">
+          <label for="languageSelect">Learning</label>
+          <select id="languageSelect">
+            <option value="Spanish">Spanish</option>
+            <option value="French">French</option>
+            <option value="German">German</option>
+          </select>
+        </div>
+        
+        <div class="action-btns">
+          <button id="stopBtn" disabled>End Session</button>
+          <button id="startBtn" class="primary">Start Tutor</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="sidebar">
+      
+      <div class="status-card">
+        <div class="status-label">System Status</div>
+        <div class="status-value">
+          <div class="status-dot" id="statusDot"></div>
+          <span id="statusText">Ready</span>
+          
+          <div class="visualizer" id="visualizer">
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="transcript-card">
+        <div class="transcript-header">Live Transcript</div>
+        <div class="transcript-body" id="transcript">
+          <div class="empty-state" id="emptyState">Your conversation will appear here...</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+  
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
