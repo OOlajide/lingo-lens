@@ -136,8 +136,8 @@ startBtn.onclick = async () => {
     }
     
     updateStatus('connecting', 'Fetching Token...');
-    // Make sure server is running on port 3000
-    const res = await fetch('http://localhost:3000/api/token');
+    // Fetch ephemeral token from our backend
+    const res = await fetch('/api/token');
     if (!res.ok) throw new Error('Failed to fetch token');
     const { token } = await res.json();
     
