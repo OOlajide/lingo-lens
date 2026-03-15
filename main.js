@@ -12,6 +12,7 @@ let nextPlayTime = 0;
 let frameInterval;
 let lastSpeaker = null;
 let currentMsgContent = null;
+let currentFacingMode = 'user';
 
 // DOM Elements
 const statusText = document.getElementById('statusText');
@@ -26,6 +27,7 @@ const ambientGlow = document.getElementById('ambientGlow');
 const guideBtn = document.getElementById('guideBtn');
 const guideModal = document.getElementById('guideModal');
 const closeGuideBtn = document.getElementById('closeGuideBtn');
+const switchCamBtn = document.getElementById('switchCamBtn');
 
 guideBtn.onclick = () => {
   guideModal.style.display = 'flex';
@@ -33,6 +35,14 @@ guideBtn.onclick = () => {
 
 closeGuideBtn.onclick = () => {
   guideModal.style.display = 'none';
+};
+
+switchCamBtn.onclick = async () => {
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+  }
+  currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+  await initMedia(currentFacingMode);
 };
 
 function updateStatus(state, text) {
@@ -51,10 +61,18 @@ function updateStatus(state, text) {
   }
 }
 
-async function initMedia() {
+async function initMedia(facingMode = 'user') {
   videoElement = document.getElementById('webcam');
+  
+  // Mirror only if front-facing (user)
+  videoElement.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+
   stream = await navigator.mediaDevices.getUserMedia({
-    video: { width: 640, height: 480 },
+    video: { 
+      width: 640, 
+      height: 480,
+      facingMode: facingMode
+    },
     audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true, noiseSuppression: true }
   });
   videoElement.srcObject = stream;

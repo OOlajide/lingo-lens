@@ -74,6 +74,18 @@
       box-shadow: 2px 2px 0px var(--border);
     }
 
+    #switchCamBtn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 20;
+      background: var(--secondary);
+      padding: 0.5rem 1rem;
+      font-size: 0.8rem;
+      box-shadow: 4px 4px 0px var(--border);
+      display: none; /* Hidden by default, shown in media query */
+    }
+
     /* Modal Styles */
     .modal-overlay {
       position: fixed;
@@ -487,6 +499,10 @@
       .transcript-card {
         min-height: 400px;
       }
+
+      #switchCamBtn {
+        display: block;
+      }
     }
 
   </style>
@@ -515,6 +531,7 @@
     
     <div class="view-section">
       <div class="video-wrapper">
+        <button id="switchCamBtn">SWITCH_CAM</button>
         <div class="ambient-glow" id="ambientGlow"></div>
         <video id="webcam" autoplay playsinline muted></video>
       </div>
