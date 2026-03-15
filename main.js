@@ -121,8 +121,19 @@ function appendTranscript(text, isTutor) {
   }
   
   // Append text with a space if content already exists
-  const separator = currentMsgContent.textContent ? ' ' : '';
-  currentMsgContent.textContent += separator + text.trim();
+  const separator = currentMsgContent.innerHTML ? ' ' : '';
+  let processedText = text.trim();
+  
+  // Simple markdown bold parser
+  // This handles the case where ** might be split across messages by joining first
+  let fullText = currentMsgContent.getAttribute('data-raw') || '';
+  fullText += separator + processedText;
+  currentMsgContent.setAttribute('data-raw', fullText);
+  
+  // Replace **text** with <b>text</b>
+  const htmlText = fullText.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+  currentMsgContent.innerHTML = htmlText;
+  
   transcriptEl.scrollTop = transcriptEl.scrollHeight;
 }
 
@@ -247,6 +258,7 @@ function stopSession() {
   
   lastSpeaker = null;
   currentMsgContent = null;
+  nextPlayTime = 0;
   
   clearInterval(frameInterval);
   if (session) session.close();
@@ -254,6 +266,11 @@ function stopSession() {
   if (audioWorkletNode) {
     audioWorkletNode.disconnect();
     audioWorkletNode = null;
+  }
+
+  if (audioContext) {
+    audioContext.close();
+    audioContext = null;
   }
 }
 
