@@ -23,6 +23,17 @@ const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
 const languageSelect = document.getElementById('languageSelect');
 const ambientGlow = document.getElementById('ambientGlow');
+const guideBtn = document.getElementById('guideBtn');
+const guideModal = document.getElementById('guideModal');
+const closeGuideBtn = document.getElementById('closeGuideBtn');
+
+guideBtn.onclick = () => {
+  guideModal.style.display = 'flex';
+};
+
+closeGuideBtn.onclick = () => {
+  guideModal.style.display = 'none';
+};
 
 function updateStatus(state, text) {
   statusText.textContent = text;

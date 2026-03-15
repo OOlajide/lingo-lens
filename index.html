@@ -57,6 +57,68 @@
       padding: 1rem 2rem;
       margin-bottom: 20px;
       box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #guideBtn {
+      background: #39FF14; /* Neon Green */
+      padding: 0.5rem 1.5rem;
+      font-size: 1rem;
+      box-shadow: 4px 4px 0px var(--border);
+    }
+
+    #guideBtn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px var(--border);
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: #fff;
+      border: var(--border-width) solid var(--border);
+      padding: 2.5rem;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 16px 16px 0px var(--border);
+    }
+
+    .modal-content h2 {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+      background: var(--secondary);
+      display: inline-block;
+      padding: 0 10px;
+      border: 2px solid var(--border);
+    }
+
+    .modal-content ol {
+      margin-left: 20px;
+      margin-bottom: 2rem;
+    }
+
+    .modal-content li {
+      margin-bottom: 1rem;
+      line-height: 1.4;
+      font-weight: 600;
+    }
+
+    #closeGuideBtn {
+      width: 100%;
+      background: var(--accent);
     }
 
     h1 {
@@ -362,13 +424,92 @@
       z-index: 10;
     }
 
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+      body {
+        height: auto;
+        overflow: auto;
+        padding: 10px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      header {
+        padding: 0.75rem 1rem;
+        margin-bottom: 15px;
+        --shadow-offset: 4px;
+      }
+
+      .main-container {
+        flex-direction: column;
+        height: auto;
+        gap: 20px;
+      }
+
+      .view-section {
+        flex: none;
+        height: auto;
+      }
+
+      .video-wrapper {
+        height: 250px;
+        flex: none;
+        --shadow-offset: 4px;
+      }
+
+      .controls-panel {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+        padding: 1rem;
+        --shadow-offset: 4px;
+      }
+
+      .lang-selector {
+        justify-content: space-between;
+      }
+
+      .action-btns {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        flex: none;
+        width: 100%;
+      }
+
+      .status-card, .transcript-card {
+        --shadow-offset: 4px;
+      }
+
+      .transcript-card {
+        min-height: 400px;
+      }
+    }
+
   </style>
 </head>
 <body>
   
   <header>
     <h1>LingoLens</h1>
+    <button id="guideBtn">GUIDE</button>
   </header>
+
+  <div id="guideModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <h2>LINGOLENS // GUIDE</h2>
+      <ol>
+        <li><strong>SELECT:</strong> Pick a language (Spanish, French, German).</li>
+        <li><strong>START:</strong> Click <strong>START SESSION</strong> to begin.</li>
+        <li><strong>LEARN:</strong> The tutor will use what is on the video feed as context to teach you your selected language.</li>
+        <li><strong>END:</strong> Click <strong>END SESSION</strong> to stop.</li>
+      </ol>
+      <button id="closeGuideBtn">CLOSE</button>
+    </div>
+  </div>
   
   <div class="main-container">
     
