@@ -38,11 +38,19 @@ closeGuideBtn.onclick = () => {
 };
 
 switchCamBtn.onclick = async () => {
+  const wasActive = isSessionActive;
+  if (wasActive) {
+    stopSession();
+  }
   if (stream) {
     stream.getTracks().forEach(track => track.stop());
   }
   currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
   await initMedia(currentFacingMode);
+  
+  if (wasActive) {
+    await startSession();
+  }
 };
 
 function updateStatus(state, text) {
@@ -166,13 +174,13 @@ function appendTranscript(text, isTutor) {
   transcriptEl.scrollTop = transcriptEl.scrollHeight;
 }
 
-startBtn.onclick = async () => {
+async function startSession() {
   try {
     startBtn.disabled = true;
     updateStatus('connecting', 'Initializing Media...');
     
     if (!stream) {
-      await initMedia();
+      await initMedia(currentFacingMode);
     }
     
     updateStatus('connecting', 'Fetching Token...');
@@ -276,7 +284,9 @@ startBtn.onclick = async () => {
     updateStatus('error', 'Setup failed');
     startBtn.disabled = false;
   }
-};
+}
+
+startBtn.onclick = startSession;
 
 function stopSession() {
   isSessionActive = false;
