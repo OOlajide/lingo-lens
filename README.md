@@ -17,6 +17,8 @@ LingoLens is an interactive language learning application that leverages the pow
 - **Frontend**: Vanilla JS, Vite
 - **AI Integration**: Gemini Live API (`gemini-2.5-flash-native-audio-preview-12-2025`)
 
+![LingoLens Architecture Diagram](architecture-diagram.png)
+
 ---
 
 ## 📋 Prerequisites
