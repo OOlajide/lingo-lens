@@ -497,7 +497,15 @@
       }
 
       .transcript-card {
-        height: 400px;
+        height: 800px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .transcript-body {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto !important;
       }
 
       #switchCamBtn {
@@ -518,7 +526,7 @@
     <div class="modal-content">
       <h2>LINGOLENS // GUIDE</h2>
       <ol>
-        <li><strong>SELECT:</strong> Pick a language (Spanish, French, German).</li>
+        <li><strong>SELECT:</strong> Pick a language.</li>
         <li><strong>START:</strong> Click <strong>START SESSION</strong> to begin.</li>
         <li><strong>LEARN:</strong> The tutor will use what is on the video feed as context to teach you your selected language.</li>
         <li><strong>END:</strong> Click <strong>END SESSION</strong> to stop.</li>
